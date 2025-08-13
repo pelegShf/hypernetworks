@@ -19,13 +19,13 @@ class HyperMLPGeneric(nn.Module):
         ################################################## 
         if use_cnn_cond:
             self.cond = nn.Sequential(
-                nn.Conv2d(in_channels, 16, 3, 1, 1),
+                nn.Conv2d(in_channels, 16, 3, 1, 1, bias=False),
                 nn.BatchNorm2d(16),
                 nn.ReLU(),
-                nn.Conv2d(16, 32, 3, 2, 1),
+                nn.Conv2d(16, 32, 3, 2, 1, bias=False),
                 nn.BatchNorm2d(32),
                 nn.ReLU(),  
-                nn.Conv2d(32, 64, 3, 2, 1),
+                nn.Conv2d(32, 64, 3, 2, 1, bias=False),
                 nn.BatchNorm2d(64),
                 nn.ReLU(),
                 nn.AdaptiveAvgPool2d(1),
