@@ -1,14 +1,16 @@
 train:
-  lr: 1.0
+  lr: 1e-3
+  weight_decay: 1e-4
   batch_size: 64
   epochs: 20
-  gamma: 0.7
+  gamma: 0.95
   n_classes: 10
   seed: 42
   normalize: 1
+  dataset: "mnist"
 
 model:
-  layer_dims: [784, 64, 10]
+  layer_dims: [784, 128, 10]
   emb_dim: 5
   cnn_cond: true
   clip_grad: 0.7

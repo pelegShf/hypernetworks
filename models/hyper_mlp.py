@@ -87,6 +87,5 @@ class HyperMLPGeneric(nn.Module):
             ).squeeze(1)
             if i < self.L - 1:
                 h = F.relu(h)
-
+                h = F.dropout(h, p=0.2, training=self.training)
         return h
-

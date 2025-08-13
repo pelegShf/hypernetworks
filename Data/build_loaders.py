@@ -1,7 +1,13 @@
 from __future__ import annotations
-from typing import Tuple
 import torch
 from torchvision import datasets, transforms
+from torchvision.datasets import MNIST, FashionMNIST, KMNIST
+
+DATASETS = {
+    "mnist": MNIST,
+    "fashion": FashionMNIST,
+    "kmnist": KMNIST,
+}
 
 
 def build_loaders(
@@ -10,12 +16,14 @@ def build_loaders(
     tst_batch_size: int,
     workers: int,
     device: torch.device,
-    normalize: bool = False,
+    dataset: str = "mnist",
 ):
+    DS = DATASETS[dataset]
+
     tfm = transforms.Compose([transforms.ToTensor()])
 
-    train = datasets.MNIST(data_dir, train=True, download=True, transform=tfm)
-    test = datasets.MNIST(data_dir, train=False, download=True, transform=tfm)
+    train = DS(data_dir, train=True, download=True, transform=tfm)
+    test = DS(data_dir, train=False, download=True, transform=tfm)
 
     pin = device.type == "cuda"
     train_loader = torch.utils.data.DataLoader(

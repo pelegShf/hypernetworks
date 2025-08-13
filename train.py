@@ -1,7 +1,6 @@
 from __future__ import annotations
-import os, time
+import time
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from torch import optim
 from torch.optim.lr_scheduler import ExponentialLR
@@ -118,7 +117,8 @@ def main():
         tst_batch_size=args.testing_batch_size,
         workers=args.workers,
         device=device,
-        normalize=args.normalize,
+        dataset=args.dataset,
+
     )
 
     model = HyperMLPGeneric(
@@ -132,7 +132,7 @@ def main():
             if p.requires_grad:
                 print(f"{n:40s} {p.numel():8d}")
 
-    optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
+    optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     scheduler = ExponentialLR(optimizer=optimizer, gamma=args.gamma)
     train(
         model,
