@@ -100,7 +100,7 @@ class HyperMLPGeneric(nn.Module):
             # h is [B,d_in] and Ws[i] is [B,d_out,d_in] -> h: [B,1,d_in] & Ws[i]: [B,d_in,d_out]
             mm = torch.bmm(h.unsqueeze(1), Ws[i].transpose(1, 2))
             # bs[i] is [B, d_out] -> [B,1,d_out]
-            h = (mm + bs[i].unsqueeze(1)).squeeze()
+            h = (mm + bs[i].unsqueeze(1)).squeeze(1)
             if i < self.L - 1:
                 h = F.relu(h)
                 h = F.dropout(h, p=self.dropout, training=self.training)
