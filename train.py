@@ -1,5 +1,3 @@
-from __future__ import annotations
-import time
 import torch
 import torch.nn.functional as F
 from torch import optim
@@ -8,14 +6,14 @@ from torch.optim.lr_scheduler import ExponentialLR
 from arguments import get_args
 from models.hyper_mlp import HyperMLPGeneric
 from Data.build_loaders import build_loaders
-from utils.common import set_seed, get_device, cuda_sync
+from utils.common import set_seed, get_device
 from utils.visual import plot_results
+
 
 
 def train_one_epoch(model, device, train_loader, optimizer, clip_grad=None):
     model.train()
-    running = 0.0
-    total = 0
+    running, total = 0.0, 0
     for data, target in train_loader:
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad(set_to_none=True)
@@ -37,9 +35,7 @@ def train_one_epoch(model, device, train_loader, optimizer, clip_grad=None):
 @torch.no_grad()
 def evaluate(model, device, test_loader):
     model.eval()
-    loss_sum = 0.0
-    correct = 0
-    total = 0
+    loss_sum, correct, total = 0.0, 0 ,0
     for data, target in test_loader:
         data, target = data.to(device), target.to(device)
 
@@ -66,42 +62,19 @@ def train(
     verbose=False,
 ):
     hist = {"train_loss": [], "test_loss": [], "test_acc": []}
-    epoch_times, train_times, test_times = [], [], []
-
-    cuda_sync()
-    t0_all = time.perf_counter()
-    for epoch in range(1, epochs, +1):
-        cuda_sync()
-        t0 = time.perf_counter()
+    for epoch in range(1, epochs + 1):
         tr = train_one_epoch(model, device, train_loader, optimizer, clip_grad)
-        cuda_sync()
-        t1 = time.perf_counter()
 
-        cuda_sync()
-        s0 = time.perf_counter()
         vl, va = evaluate(model, device, test_loader)
-        cuda_sync()
-        s1 = time.perf_counter()
+
 
         scheduler.step()
-        epoch_times.append((s1 - t0))
-        train_times.append((t1 - t0))
-        test_times.append((s1 - s0))
 
         hist["train_loss"].append(tr)
         hist["test_loss"].append(vl)
         hist["test_acc"].append(va)
 
         print(f"Epoch {epoch:03d} | train {tr:.4f} | val {vl:.4f} | acc {va:.2f}% ")
-    cuda_sync()
-    total = time.perf_counter() - t0_all
-
-    if verbose:
-        print(
-            f"Total {total:.2f}s | avg/epoch {sum(epoch_times)/len(epoch_times):.2f}s "
-            f"(train {sum(train_times)/len(train_times):.2f}s, test {sum(test_times)/len(test_times):.2f}s)"
-        )
-
     plot_results(hist, output_dir)
 
 
@@ -118,13 +91,14 @@ def main():
         workers=args.workers,
         device=device,
         dataset=args.dataset,
-
+        seed = args.seed
     )
 
     model = HyperMLPGeneric(
         layer_dims=args.layer_dims,
         embed_dim=args.emb_dim,
         use_cnn_cond=args.use_cnn_cond,
+        dropout=args.dropout,
     ).to(device)
 
     if args.verbose:
@@ -132,7 +106,10 @@ def main():
             if p.requires_grad:
                 print(f"{n:40s} {p.numel():8d}")
 
-    optimizer = optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    optimizer = optim.AdamW(
+        model.parameters(), lr=args.lr, weight_decay=args.weight_decay
+    )
+
     scheduler = ExponentialLR(optimizer=optimizer, gamma=args.gamma)
     train(
         model,
@@ -142,8 +119,8 @@ def main():
         test_loader,
         optimizer,
         scheduler,
-        True,
-        args.run_dir,
+        clip_grad=args.clip_grad,
+        output_dir=args.run_dir + args.dataset,
     )
 
 

@@ -1,29 +1,30 @@
 train:
-  lr: 1e-3
+  lr: 3e-4
   weight_decay: 1e-4
-  batch_size: 64
-  epochs: 20
-  gamma: 0.95
+  batch_size: 256
+  epochs: 25
+  gamma: 0.9
   n_classes: 10
   seed: 42
   normalize: 1
   dataset: "mnist"
 
 model:
-  layer_dims: [784, 128, 10]
-  emb_dim: 5
+  layer_dims: [784,516, 256,128, 10]
+  emb_dim: 64
   cnn_cond: true
   clip_grad: 0.7
   data_dir: "./Data/mnist"
+  dropout: 0.3
 
 log:
   interval: 100
-  run_dir: runs/mnist_hypernet
+  run_dir: runs/hypernet
   verbose: false
 
 
 testing:
-  batch_size: 10
+  batch_size: 64
 
 misc:
   workers: 8

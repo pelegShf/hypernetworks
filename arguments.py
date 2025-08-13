@@ -10,7 +10,9 @@ def get_args():
     # train params
     parser.add_argument("--seed", type=int, default=defaults["train"]["seed"])
     parser.add_argument("--lr", type=float, default=defaults["train"]["lr"])
-    parser.add_argument("--weight_decay", type=float, default=defaults["train"]["weight_decay"])
+    parser.add_argument(
+        "--weight_decay", type=float, default=defaults["train"]["weight_decay"]
+    )
     parser.add_argument(
         "--batch_size", type=int, default=defaults["train"]["batch_size"]
     )
@@ -22,8 +24,12 @@ def get_args():
         "--normalize", type=int, choices=[0, 1], default=defaults["train"]["normalize"]
     )
 
-    parser.add_argument("--dataset", type=str, choices=["mnist","fashion","kmnist"], default=defaults["train"]["dataset"])
-
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        choices=["mnist", "fashion", "kmnist"],
+        default=defaults["train"]["dataset"],
+    )
 
     # Model stuff
     parser.add_argument(
@@ -41,6 +47,7 @@ def get_args():
     parser.add_argument(
         "--clip_grad", type=float, default=defaults["model"]["clip_grad"]
     )
+    parser.add_argument("--dropout", type=float, default=defaults["model"]["dropout"])
     # Log
     parser.add_argument("--log_interval", type=int, default=defaults["log"]["interval"])
     parser.add_argument("--run_dir", type=str, default=defaults["log"]["run_dir"])
