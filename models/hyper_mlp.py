@@ -9,7 +9,7 @@ class HyperMLPGeneric(nn.Module):
     ):
         super().__init__()
         assert len(layer_dims) >= 2, "Need at least input and output dims"
-        self.layer_dims = layer_dims
+        self.layer_dims = torch.tensor(layer_dims,dtype=torch.long)
         self.L = len(layer_dims) - 1
         self.emb_dim = embed_dim
         self.use_cnn_cond = use_cnn_cond
@@ -41,6 +41,13 @@ class HyperMLPGeneric(nn.Module):
         ################################################## 
         ################ Main network init ###############
         ################################################## 
+        self.w_shapes = torch.stack((self.layer_dims[1:],self.layer_dims[:-1]),dim=1)
+        self.b_shapes = self.layer_dims[1:].unsqueeze(1)
+        
+        self.sizes = torch.stack((self.w_shapes.prod(dim=1), self.layer_dims[1:]),dim=1).flatten()
+        self.total = self.sizes.sum()
+        
+        
         self.shapes_W, self.shapes_b,sizes = [], [], []
         for i in range(self.L):
             out_d, in_d = layer_dims[i + 1], layer_dims[i]

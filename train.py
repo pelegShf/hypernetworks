@@ -35,16 +35,18 @@ def train_one_epoch(model, device, train_loader, optimizer, clip_grad=None):
 @torch.no_grad()
 def evaluate(model, device, test_loader):
     model.eval()
-    loss_sum, correct, total = 0.0, 0 ,0
+    loss_sum, correct, total = 0.0, 0, 0
     for data, target in test_loader:
         data, target = data.to(device), target.to(device)
 
         output = model(data)
-
-        loss_sum += F.cross_entropy(output, target, reduction="sum").item()
+        loss = F.cross_entropy(output, target)
         pred = output.argmax(dim=1)
+
+        b = data.size(0)
+        loss_sum += loss * b
         correct += (pred == target).sum().item()
-        total += data.size(0)
+        total += b
 
     return loss_sum / total, 100.0 * correct / total
 
