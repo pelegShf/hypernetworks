@@ -45,7 +45,7 @@ class HyperMLPGeneric(nn.Module):
         self.b_shapes = self.layer_dims[1:].unsqueeze(1)
         
         self.sizes = torch.stack((self.w_shapes.prod(dim=1), self.layer_dims[1:]),dim=1).flatten()
-        self.total = self.sizes.sum()
+        self.total = int(self.sizes.sum().item())
         
         
         self.shapes_W, self.shapes_b,sizes = [], [], []

@@ -13,23 +13,26 @@ from utils.visual import plot_results
 
 def train_one_epoch(model, device, train_loader, optimizer, clip_grad=None):
     model.train()
-    running, total = 0.0, 0
+    running,correct, total = 0.0, 0, 0
     for data, target in train_loader:
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad(set_to_none=True)
 
         output = model(data)
         loss = F.cross_entropy(output, target)
+        pred = output.argmax(dim=1)
+
         loss.backward()
         if clip_grad is not None:
             torch.nn.utils.clip_grad_norm_(model.parameters(), clip_grad)
         optimizer.step()
 
         b = data.size(0)
+        correct += (pred == target).sum().item()
         running += loss.item() * b
         total += b
 
-    return running / total
+    return running / total, 100 * (correct / total)
 
 
 @torch.no_grad()
@@ -44,7 +47,7 @@ def evaluate(model, device, test_loader):
         pred = output.argmax(dim=1)
 
         b = data.size(0)
-        loss_sum += loss * b
+        loss_sum += loss.item() * b
         correct += (pred == target).sum().item()
         total += b
 
@@ -63,9 +66,9 @@ def train(
     output_dir,
     verbose=False,
 ):
-    hist = {"train_loss": [], "test_loss": [], "test_acc": []}
+    hist = {"train_loss": [], "train_acc": [], "test_loss": [], "test_acc": []}
     for epoch in range(1, epochs + 1):
-        tr = train_one_epoch(model, device, train_loader, optimizer, clip_grad)
+        tr, ta = train_one_epoch(model, device, train_loader, optimizer, clip_grad)
 
         vl, va = evaluate(model, device, test_loader)
 
@@ -73,10 +76,11 @@ def train(
         scheduler.step()
 
         hist["train_loss"].append(tr)
+        hist["train_acc"].append(ta)
         hist["test_loss"].append(vl)
         hist["test_acc"].append(va)
 
-        print(f"Epoch {epoch:03d} | train {tr:.4f} | val {vl:.4f} | acc {va:.2f}% ")
+        print(f"Epoch {epoch:03d} | train {tr:.4f} - {ta:.4f}% | test {vl:.4f} - {va:.2f}% ")
     plot_results(hist, output_dir)
 
 

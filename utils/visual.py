@@ -19,10 +19,12 @@ def plot_results(history, save_prefix=None):
     plt.close()
 
     plt.figure()
+    plt.plot(epochs, history["train_acc"], label="Train accuracy")
     plt.plot(epochs, history["test_acc"], label="Test accuracy")
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
     plt.title("Accuracy")
+    plt.legend()
 
     if save_prefix:
         plt.savefig(f"{save_prefix}_acc.png", bbox_inches="tight", dpi=150)
